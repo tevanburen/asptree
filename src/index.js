@@ -1,123 +1,95 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import { pairsString } from './txt.js';
+import { Greek } from './greek.js';
 
-function Square(props) {
-  return (
-    <button className="square" onClick={props.onClick}>
-      {props.value}
-    </button>
-  );
-}
+// class PuzzlePiece extends React.Component {
+//   constructor(props, brother) {
+//     super(props);
+//     this.brother = brother;
+//   }
 
-class Board extends React.Component {
-  renderSquare(i) {
-    return (
-      <Square
-        value={this.props.squares[i]}
-        onClick={() => this.props.onClick(i)}
-      />
-    );
+//   render() {
+//     return (
+//       <button className="square" >
+//         {this.brother.name}
+//       </button>
+//     );
+//   }
+// }
+
+class Brother {
+  constructor(name, big, roster, graduated, pc) {
+    this.name = name;
+    this.big = big;
+    this.littles = [];
+    this.roster = roster;
+    this.graduated = graduated;
+    this.pc = pc;
   }
 
-  render() {
+  addLittle(little) {
+    this.littles.push(little)
+  }
+
+  stepladder() {
+    let test = this.littles.map(brother => {return brother.stepladder();});
     return (
-      <div>
-        <div className="board-row">
-          {this.renderSquare(0)}
-          {this.renderSquare(1)}
-          {this.renderSquare(2)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(3)}
-          {this.renderSquare(4)}
-          {this.renderSquare(5)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(6)}
-          {this.renderSquare(7)}
-          {this.renderSquare(8)}
-        </div>
-      </div>
+      <li>
+        <div>{this.name + ", " + ((Number.isInteger(this.roster)) ? (Greek.getText(this.pc, false) + " #" + this.roster.toString()) : "Transfer Student")}</div>
+        <ul style={{listStyle: "none"}}>{test}</ul>
+      </li>
     );
   }
 }
 
-class Game extends React.Component {
-  constructor(props) {
+class Background extends React.Component {
+  constructor(props, brothers) {
     super(props);
-    this.state = {
-      history: [
-        {
-          squares: Array(9).fill(null)
-        }
-      ],
-      stepNumber: 0,
-      xIsNext: true
-    };
-  }
-
-  handleClick(i) {
-    const history = this.state.history.slice(0, this.state.stepNumber + 1);
-    const current = history[history.length - 1];
-    const squares = current.squares.slice();
-    if (calculateWinner(squares) || squares[i]) {
-      return;
+    this.allBrothers = getBrothers();
+    this.curBrothers = [];
+    for (const brother of this.allBrothers) {
+      if (brother.big === null) {
+        this.curBrothers.push(brother);
+      }
     }
-    squares[i] = this.state.xIsNext ? "X" : "O";
-    this.setState({
-      history: history.concat([
-        {
-          squares: squares
-        }
-      ]),
-      stepNumber: history.length,
-      xIsNext: !this.state.xIsNext
-    });
   }
 
-  jumpTo(step) {
-    this.setState({
-      stepNumber: step,
-      xIsNext: (step % 2) === 0
-    });
-  }
+  // handleClick(i) {
+  //   const history = this.state.history.slice(0, this.state.stepNumber + 1);
+  //   const current = history[history.length - 1];
+  //   const squares = current.squares.slice();
+  //   squares[i] = this.state.xIsNext ? "X" : this.props.oSymbol;
+  //   this.setState({
+  //     history: history.concat([
+  //       {
+  //         squares: squares
+  //       }
+  //     ]),
+  //     stepNumber: history.length,
+  //     xIsNext: !this.state.xIsNext
+  //   });
+  // }
 
   render() {
-    const history = this.state.history;
-    const current = history[this.state.stepNumber];
-    const winner = calculateWinner(current.squares);
 
-    const moves = history.map((step, move) => {
-      const desc = move ?
-        'Go to move #' + move :
-        'Go to game start';
-      return (
-        <li key={move}>
-          <button onClick={() => this.jumpTo(move)}>{desc}</button>
-        </li>
-      );
-    });
-
-    let status;
-    if (winner) {
-      status = "Winner: " + winner;
-    } else {
-      status = "Next player: " + (this.state.xIsNext ? "X" : "O");
+    let myText = "";
+    for (const brother of this.curBrothers) {
+      let tmp = brother.big;
+      if (tmp !== null) {
+        tmp = tmp.name;
+      }
+      myText += brother.name + ": " + brother.roster.toString() + " (" + tmp + ")";
     }
 
+    // let test = this.curBrothers.map(brother => brother.stepladder);
+    const test = this.curBrothers.map(brother => {return brother.stepladder();});
+
     return (
-      <div className="game">
-        <div className="game-board">
-          <Board
-            squares={current.squares}
-            onClick={i => this.handleClick(i)}
-          />
-        </div>
-        <div className="game-info">
-          <div>{status}</div>
-          <ol>{moves}</ol>
-        </div>
+      <div className="background">
+          {/* <div>{myText}</div> */}
+          <ul style={{listStyle: "none"}}>{test}</ul>
       </div>
     );
   }
@@ -126,24 +98,39 @@ class Game extends React.Component {
 // ========================================
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<Game />);
+root.render(<Background />);
 
-function calculateWinner(squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
-    }
+function getBrothers() {
+  var arr = pairsString.split(",");
+  var out = [];
+  var roster = 0;
+  var pc = 0;
+  for (let i = 0; i < arr.length; i++) {
+    let str = arr[i].substring(1);
+    if (str.includes(" Class")) {
+      pc++;
+    } else if (str !== "") {
+      let big = null;
+      let transfer = arr[i + 1].localeCompare("transfer") === 0;
+      if ((!transfer) && arr[i + 1].length !== 0) {
+        big = "tried";
+        for (let j = out.length - 1; j >= 0; j--) {
+          if (arr[i + 1].localeCompare(out[j].name) === 0) {
+            big = out[j];
+            break;
+          }
+        }
+      }
+
+      let tmp = (transfer) ? roster + .5 : ++roster;
+      
+      let newBro = new Brother(str, big, tmp, arr[i + 2] !== "", pc);
+      out.push(newBro);
+      if (big !== null) {
+        big.addLittle(newBro);
+      }
+      i += 2;
+   }
   }
-  return null;
+  return out;
 }
