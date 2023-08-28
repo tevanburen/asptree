@@ -1,4 +1,10 @@
 const pairsString = `
+GCAs,
+JW Lane,
+John Ryan,
+Bill Doyle,
+Andrew Hallacy,
+
 Founding Class,
 Jorge Nessi,,graduated,
 Andrew Hallacy,,graduated,
@@ -175,7 +181,7 @@ Landon Menuey,Benjamin Garrison,graduated,
 Ahmed Klasra,William Crawford,,
 Sims Kuester,Jacob Present,graduated,
 Bain McHale,Zach Hess,graduated,
-Amersaikhan Jargalsaikhan,Luke Xu,graduated,
+Amarsaikhan Jargalsaikhan,Luke Xu,graduated,
 Kevin Li,Shivam Patel,graduated,
 
 Omicron Class,
