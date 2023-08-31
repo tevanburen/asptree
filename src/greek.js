@@ -47,7 +47,7 @@ export class Greek {
         } else if (pc === 1) {
             return "Founding Class";
         } else {
-            let str = [];
+            var str = "";
             pc -= 2;
             let counter = 23;
             let length = 1;
@@ -58,11 +58,11 @@ export class Greek {
             }
             for (let i = 0; i < length - 1; i++) {
                 counter /= 23;
-                let tmp = pc / counter;
-                str.push(english ? Greek.greekLetters[tmp] : Greek.greekCharacters[tmp] + " ");
+                let tmp = Math.floor(pc / counter);
+                str += (english ? Greek.greekLetters[tmp] : Greek.greekCharacters[tmp]) + " ";
                 pc -= tmp * 23;
             }
-            return str.join("") + (english ? Greek.greekLetters[pc] : Greek.greekCharacters[pc]) + (english ? " Class" : "");
+            return str + (english ? Greek.greekLetters[pc] : Greek.greekCharacters[pc]) + (english ? " Class" : "");
         }
     }
 }

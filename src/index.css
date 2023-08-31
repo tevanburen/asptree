@@ -5,12 +5,15 @@ body {
   
   ol, ul {
     padding-left: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    list-style: none;
+    white-space: nowrap;
+    vertical-align: top;
   }
-  
-  .board-row:after {
-    clear: both;
-    content: "";
-    display: table;
+
+  li {
+    vertical-align: top;
   }
   
   .status {
@@ -44,4 +47,5 @@ body {
     display: flex;
     flex-direction: column;
     white-space: nowrap;
+    padding: 0;
   }

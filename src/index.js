@@ -5,7 +5,10 @@ import { pairsString } from './txt.js';
 import { Greek } from './greek.js';
 
 class Brother {
-  constructor(name, big, roster, graduated, pc) {
+  static width = 1;
+  static height = 3;
+
+  constructor(name, big, roster, graduated, pc, renderSpecial) {
     this.name = name;
     this.big = big;
     this.littles = [];
@@ -14,6 +17,8 @@ class Brother {
     this.pc = pc;
     this.numDecs = null;
     this.numLivingDecs = null;
+    this.tree = null;
+    this.renderSpecial = (renderSpecial === undefined) ? false : renderSpecial;
   }
 
   addLittle(little) {
@@ -65,6 +70,190 @@ class Brother {
     ),
     "width" : anyLittles ? totalWidth : 1};
   }
+
+  getWidth() {
+    return Brother.width;
+  }
+
+  static extention;
+  static extentionFlip;
+
+  generateTree(trim, compaction, byPC) {
+    var childTrees = [];
+    var minChildPC = Infinity;
+    if (byPC) {
+      for (let bro of this.littles) {
+        if (trim < 2 || !bro.graduated || bro.numLivingDecs > 0) {
+          minChildPC = Math.min(minChildPC, bro.pc);
+        }
+      }
+    }
+
+    for (let bro of this.littles) {
+      if (trim < 2 || !bro.graduated || bro.numLivingDecs > 0) {
+        let child = bro.generateTree(trim, compaction, byPC);
+        if (byPC) {
+          for (let i = 0; i < bro.pc - minChildPC; i++) {
+            child = treeVertConcat(Brother.extention, child);
+          }
+        }
+        childTrees.push(child);
+      }
+    }
+
+    var tree = organizeTrees(childTrees, compaction);
+
+    if (tree.height === 0) {
+      tree = new Tree([[this]]);
+    } else {
+      tree = treeVertConcat(new Tree([[new Branch(tree.spouts)]]), tree);
+      if (byPC) {
+        for (let i = 1; i < minChildPC - this.pc; i++) {
+          tree = treeVertConcat(Brother.extentionFlip, tree);
+        }
+      }
+      tree = treeVertConcat(new Tree([[this]]), tree);
+    }
+    this.tree = tree;
+    return this.tree;
+  }
+
+  render() {
+    const margin = Background.toPxWidth(0, Background.pxHeight / 2);
+    const pcColor = getPCColor(this.pc);
+    if (!this.renderSpecial) {
+      if (this.pc !== null) return <div style={{width: Background.toPxWidth(Brother.width, -4-Background.pxHeight), marginLeft: margin, marginRight: margin, height: Background.toPxHeight(Brother.height, -4), backgroundColor: pcColor.backgroundColor, display: "flex", justifyContent: "center", alignItems: "center", border: "2px solid " + pcColor.borderColor, whiteSpace: "pre-wrap", textAlign: "center"}}>
+          {/* {this.graduated ? this.name : <b>{this.name}</b>} */}
+          {this.name}
+        </div>
+      const pad = <div style={{display: "inline-block", width: Background.toPxWidth(Brother.width / 2, -1), height: Background.toPxHeight(Brother.height)}}></div>;
+      return <ul>
+        {pad}
+        <div style={{display: "inline-block", width: Background.toPxWidth(0, 2), height: Background.toPxHeight(Brother.height), backgroundColor: "black"}}></div>
+        {pad}
+      </ul>
+    }
+
+    return <ul>
+      <li style={{display: "inline-block"}}>
+        {(this.pc === 0 && (this.roster === -1 || this.roster === null)) ? 
+        <div style={{width: margin, height: Background.toPxHeight(Brother.height)}}></div> : 
+        <ul>
+          <div style={{width: Background.toPxWidth(0, Background.pxHeight), height: Background.toPxHeight(Brother.height / 2, -1)}}></div>
+          <div style={{width: Background.toPxWidth(0, Background.pxHeight), height: Background.toPxHeight(0, 2), backgroundColor: "black"}}></div>
+        </ul>}
+      </li>
+      <li style={{display: "inline-block"}}>
+        <div style={{width: Background.toPxWidth(Brother.width, -4-Background.pxHeight), height: Background.toPxHeight(Brother.height, -4), backgroundColor: pcColor.backgroundColor, display: "flex", justifyContent: "center", alignItems: "center", border: "2px solid " + pcColor.borderColor, whiteSpace: "pre-wrap", textAlign: "center"}}>
+          {this.name}
+        </div>
+      </li>
+    </ul>;
+  }
+}
+
+class Tree {
+  constructor (rows) {
+    if (rows === undefined || rows === null || rows.length === 0) {
+      this.rows = null;
+      this.height = 0;
+      this.width = 0;
+      this.spouts = 0;
+    } else {
+      this.rows = rows;
+      this.height = rows.length;
+      this.width = 0;
+      this.spouts = [];
+      for (let elem of rows[0]) {
+        if (elem instanceof Brother) {
+          this.spouts.push(this.width);
+        }
+        this.width += elem.getWidth();
+      }
+    }
+  }
+
+  render() {
+    return <ul>
+      {this.rows.map(row => {
+        var anyBrothers = false;
+        for (let elem of row) {
+          if (elem instanceof Brother) {
+            anyBrothers = true;
+            break;
+          }
+        }
+        return <li style={{}}>
+            <ul style={{height: Background.toPxHeight(anyBrothers? Brother.height : 1)}}>
+              {row.map(elem => {return <li style={{display: "inline-block"}}>{elem.render()}</li>;})}
+            </ul>
+          </li>;
+        })}
+    </ul>
+  }
+}
+
+class Blank {
+  constructor(width) {
+    this.width = (width === undefined || width === null) ? 1 : width;
+  }
+
+  getWidth() {
+    return this.width;
+  }
+
+  render() {
+    return <div style={{width: Background.toPxWidth(this.width), height: Background.toPxHeight(1), backgroundColor: ""}}>
+        {/* {"blank" + this.width.toString()} */}
+      </div>
+  }
+}
+
+class Branch {
+  constructor(spouts) {
+    this.exists = spouts !== undefined;
+    this.spouts = spouts;
+    this.width = this.exists ? spouts[spouts.length - 1] + 1 : 1;
+  }
+
+  getWidth() {
+    return this.width;
+  }
+
+  render() {
+    const testColor = "";
+    if (!this.exists) return <div style={{width: Background.toPxWidth(1), height: Background.toPxHeight(1)}}></div>;
+
+    const out = [<li style={{display: "inline-block", width: Background.toPxWidth(Brother.width / 2, -1), height: Background.toPxHeight(1), backgroundColor: testColor}}></li>]
+    out.push(<li style={{display: "inline-block", width: Background.toPxWidth(0, 2), height: Background.toPxHeight(1), backgroundColor: "black"}}></li>);
+
+    function getPadding(num) {
+      const tmp = <li style={{width: Background.toPxWidth(num, -2), height: Background.toPxHeight(.5, -1), backgroundColor: testColor}}></li>
+      return <li style={{display: "inline-block", height: Background.toPxHeight(1)}}>
+        <ul>
+          {tmp}
+          <li style={{width: Background.toPxWidth(num, -2), height: Background.toPxHeight(0, 2), backgroundColor: "black"}}></li>
+          {tmp}
+        </ul>
+        </li>
+    }
+    function getSpout() {
+      return <li style={{display: "inline-block", height: Background.toPxHeight(1)}}>
+        <ul>
+          <li style={{width: Background.toPxWidth(0, 2), height: Background.toPxHeight(.5, -1), backgroundColor: testColor}}></li>
+          <li style={{width: Background.toPxWidth(0, 2), height: Background.toPxHeight(.5, 1), backgroundColor: "black"}}></li>
+        </ul>
+        </li>
+    }
+    for (let i = 1; i < this.spouts.length; i++) {
+      out.push(getPadding(this.spouts[i] - this.spouts[i - 1]));
+      out.push(getSpout());
+    }
+
+    return <ul style={{width: Background.toPxWidth(this.width), height: Background.toPxHeight(1)}}>
+        {out}
+      </ul>
+  }
 }
 
 class Background extends React.Component {
@@ -81,19 +270,32 @@ class Background extends React.Component {
       }
       this.maxPC = Math.max(this.maxPC, brother.pc);
     }
-    this.trim = 2;
     let grads = new Array(this.maxPC).fill(true);
     for (let brother of this.allBrothers) {
       grads[brother.pc] &= brother.graduated;
     }
+
     this.pcList = new Array(this.maxPC);
-    this.pcList[1] = new Brother(Greek.getText(1, true), null, null, grads[1], 1);
-    for (let i = 2; i <= this.maxPC; i++) {
-      this.pcList[i] = new Brother(Greek.getText(i, true), this.pcList[i - 1], null, grads[i], i);
+    this.pcList[0] = new Brother(Greek.getText(0, true), null, null, true, 0, false);
+    for (let i = 1; i <= this.maxPC; i++) {
+      this.pcList[i] = new Brother(Greek.getText(i, true), this.pcList[i - 1], null, grads[i], i, false);
       this.pcList[i - 1].addLittle(this.pcList[i]);
     }
-    this.displayType = 0;
+    this.pcList[0].generateTree(0, 0, true);
+
+    Brother.extention = new Tree([[new Brother(null, null, null, null, null)], [new Branch([0])]]);
+    Brother.extentionFlip = new Tree([[new Branch([0])], [new Brother(null, null, null, null, null)]]);
+
+    this.trim = 0;
+    this.compaction = 1;
+    this.byPC = false;
+
+    for (let bro of this.curBrothers) {
+      bro.generateTree(this.trim, this.compaction, this.byPC);
+    }
   }
+  static pxWidth = 128;
+  static pxHeight = 16;
 
   // handleClick(i) {
   //   const history = this.state.history.slice(0, this.state.stepNumber + 1);
@@ -111,7 +313,15 @@ class Background extends React.Component {
   //   });
   // }
 
-  render() {
+  static toPxWidth(num, delta) {
+    return (num * Background.pxWidth + ((delta === undefined) ? 0 : delta)).toString() + "px";
+  }
+
+  static toPxHeight(num, delta) {
+    return (num * Background.pxHeight + ((delta === undefined) ? 0 : delta)).toString() + "px";
+  }
+
+  render0() {
     var trees = this.curBrothers.map(brother => {return brother.stepladder(this.trim);});
 
     if (this.trim > 0) {
@@ -150,6 +360,39 @@ class Background extends React.Component {
       </div>
     );
   }
+
+  render() {
+    var childTrees = [];
+    
+    for (let bro of this.curBrothers) {
+      if (this.trim < 1 || !bro.graduated || bro.numLivingDecs > 0) {
+        let child = bro.tree;
+        if (this.byPC) {
+          for (let i = 1; i < bro.pc; i++) {
+            child = treeVertConcat(Brother.extention, child);
+          }
+        }
+        childTrees.push(child);
+      }
+    }
+
+    var tree = organizeTrees(childTrees, this.compaction)
+
+    tree = treeVertConcat(new Tree([[new Branch(tree.spouts)]]), tree);
+    tree = treeVertConcat(new Tree([this.gcas]), tree);
+    tree = treeVertConcat(tree, new Tree([[new Branch()]]));
+
+    for (let pc of this.pcList) {
+      pc.renderSpecial = !this.byPC;
+    }
+    if (this.byPC) {
+      tree = treeHorizConcat(this.pcList[0].tree, tree);
+    } else {
+      tree = treeVertConcat(tree, new Tree([this.pcList]));
+    }
+
+    return <div>{tree.render()}</div>;
+  }
 }
 
 // ========================================
@@ -162,7 +405,7 @@ function getBrothers() {
   const gcas = [];
   let i = 1;
   for (; !arr[i].includes("Founding Class"); i++) {
-    gcas.push(new Brother(arr[i].substring(1), null, -i, true, 0));
+    gcas.push(new Brother(arr[i].substring(1), null, -i, true, 0, true));
   }
   var roster = 0;
   var pc = 0;
@@ -203,33 +446,36 @@ function getBrothers() {
 }
 
 function getPCColor(pc) {
-  if (pc === 1) return "gold";
-  let arr = ["192,192,255",
-    "255,192,210",
-    "228,255,192",
-    "246,192,255",
-    "192,246,255",
-    "255,228,192",
-    "192,255,210"]
-  return "rgb(" + arr[(pc - 1) % 7] + ")";
-}
-
-function drawSpouts(widths) {
-  // const canvas = <canvas id="tutorial" width="150" height="150"></canvas>;
-  // const ctx = canvas.getContext("2d");
-  // const canvas = <canvas style={{width: totalWidth * 180, height: 10}}></canvas>;
-  // const ctx = canvas.getContext();
-  var els = [];
-  if (widths.length > 1) {
-    els.push(<li style={{display: "inline-block", verticalAlign: "top", minWidth: ((widths[0] * 204).toString() + "px"), whiteSpace: "pre-wrap"}}>{"   |\nг---^" + "-".repeat(70) + "-".repeat(Math.floor(78.1 * (widths[0] - 1)))}</li>);
-    for (let i = 1; i < widths.length - 1; i++) {
-      els.push(<li style={{display: "inline-block", verticalAlign: "top", minWidth: ((widths[i] * 204).toString() + "px"), whiteSpace: "pre-wrap"}}>{"\nv" + "-".repeat(75) + "-".repeat(Math.floor(78.1 * (widths[i] - 1)))}</li>);
-    }
-    els.push(<li style={{display: "inline-block", verticalAlign: "top", whiteSpace: "pre-wrap"}}>{"\n7"}</li>);
-  } else if (widths.length === 1) {
-    els.push(<li style={{display: "inline-block", verticalAlign: "top", whiteSpace: "pre-wrap"}}>{"|\n|"}</li>);
+  if (pc === null) return null;
+  var backgroundColor;
+  var borderColor;
+  if (pc === 1) {
+    backgroundColor = "gold";
+    borderColor = "black";
+  } else if (pc === 0) {
+    backgroundColor = "rgb(173,165,135)";
+    borderColor = "rgb(196,30,58)";
+  } else {
+    let arr = [
+      "255,192,210", // red
+      "192,246,255", // light blue
+      "246,192,255", // pink
+      "192,255,210", // green
+      "255,228,192", // orange
+      "192,192,255", // dark blue
+      // "228,255,192", // lime
+    ]
+    let arr2 = [
+      "182,30,213", // purple
+      "213,90,30", // red
+      "61,213,30", // green
+      "30,153,213", // blue
+    ]
+    const tmp = (pc - 2) % 23;
+    backgroundColor = "rgb(" + arr[tmp % 6] + ")";
+    borderColor = "rgb(" + arr2[Math.floor((tmp % 8) / 2)] + ")";
   }
-  return <ul style={{listStyle: "none"}}>{els}</ul>;
+  return {backgroundColor, borderColor};
 }
 
 function drawSpouts2(widths) {
@@ -268,4 +514,161 @@ function drawSpouts2(widths) {
     }
   }
   return <ul style={{listStyle: "none"}}>{els}</ul>;
+}
+
+function treeHorizConcat(left, right, compaction) {
+  if (left.height === 0) {
+    return right;
+  } else if (right.height === 0) {
+    return left;
+  }
+
+  const small = Math.min(left.height, right.height);
+  const squish = compaction > 0 ? findSquish(left, right, small) : 0;
+
+  const rows = [];
+
+  function makeMid(inLeft, inRight, delta) {
+    if (delta === undefined) delta = 0;
+    let mid = [];
+    if (inLeft instanceof Blank) {
+      if (inRight instanceof Blank) {
+        let tmp = inLeft.width + inRight.width + delta;
+        if (tmp > 0) mid.push(new Blank(tmp));
+      } else {
+        let tmp = inLeft.width + delta;
+        if (tmp > 0) mid.push(new Blank(tmp));
+        mid.push(inRight);
+      }
+    } else if (inRight instanceof Blank) {
+      mid.push(inLeft);
+      let tmp = inRight.width + delta;
+      if (tmp > 0) mid.push(new Blank(tmp));
+    } else {
+      mid.push(inLeft);
+      mid.push(inRight);
+    }
+    return mid;
+  }
+
+  for (let i = 0; i < small; i++) {
+    let outLeft = left.rows[i].slice(0, -1);
+    let outRight = right.rows[i].slice(1);
+    let mid = makeMid(left.rows[i][left.rows[i].length - 1], right.rows[i][0], -squish);
+
+    rows.push(outLeft.concat(mid).concat(outRight));
+  }
+  if (left.height > right.height) {
+    if (squish > right.width) {
+      for (let i = 0; i < small; i++) {
+        rows[i] = rows[i].slice(0, -1).concat(makeMid(rows[i][rows[i].length - 1], new Blank(squish - right.width)));
+      }
+      rows.push(...left.rows.slice(small));
+    } else {
+      for (let i = small; i < left.height; i++) {
+        rows.push(left.rows[i].slice(0, -1).concat(makeMid(left.rows[i][left.rows[i].length - 1], new Blank(right.width - squish))));
+      }
+    }
+  } else {
+    for (let i = small; i < right.height; i++) {
+      rows.push(makeMid(new Blank(left.width - squish), right.rows[i][0]).concat(right.rows[i].slice(1)));
+    }
+  }
+
+  return new Tree(rows);
+}
+
+function findSquish(left, right, small) {
+  if (small === undefined) small = Math.min(left.height, right.height);
+  var squish = Infinity;
+  for (let i = 0; i < small; i++) {
+    let tmp = left.rows[i].length - 1;
+    if (left.rows[i][tmp] instanceof Blank) {
+      tmp = left.rows[i][tmp].width;
+    } else {
+      tmp = 0;
+    }
+    if (right.rows[i][0] instanceof Blank) {
+      tmp += right.rows[i][0].width;
+    }
+  squish = Math.min(squish, tmp);
+  }
+  return squish;
+}
+
+function treeVertConcat(top, bottom) {
+  if (top.height === 0) {
+    return bottom;
+  } else if (bottom.height === 0) {
+    return top;
+  } else if (top.width === bottom.width) {
+    return new Tree(top.rows.concat(bottom.rows));
+  }
+  const rows = [];
+
+  function extend(input, delta) {
+    const out = [];
+    for (let i = 0; i < input.length; i++) {
+      out.push(input[i].slice(0, -1));
+      let tmp = input[i][input[i].length - 1];
+      if (tmp instanceof Blank) {
+        out[i].push(new Blank(tmp.width + delta));
+      } else {
+        out[i].push(tmp, new Blank(delta));
+      }
+    }
+    return out;
+  }
+
+  if (top.width < bottom.width) {
+    rows.push(...extend(top.rows, bottom.width - top.width).concat(bottom.rows));
+  } else {
+    rows.push(...top.rows.concat(extend(bottom.rows, top.width - bottom.width)));
+  }
+  return new Tree(rows);
+}
+
+function organizeTrees(childTrees, compaction) {
+  var tree = new Tree();
+  if (compaction < 2) {
+    for (let bro of childTrees) {
+      tree = treeHorizConcat(tree, bro, compaction);
+    }
+  } else if (childTrees.length > 0) {
+    while (childTrees.length > 1) {
+      let curInd;
+      if (tree.height === 0) {
+      // if (true) {
+        curInd = findDeepestAndSkinniest(childTrees);
+      } else {
+        let curMax = 0;
+        curInd = 0;
+        for (let i = 0; i < childTrees.length; i++) {
+          let tmp = findSquish(tree, childTrees[i]);
+          if (tmp > curMax || (tmp === curMax && compare(childTrees[i], childTrees[curInd]))) {
+            curMax = tmp;
+            curInd = i;
+          }
+        }
+      }
+      tree = treeHorizConcat(tree, childTrees[curInd], compaction);
+      childTrees = childTrees.slice(0, curInd).concat(childTrees.slice(curInd + 1));
+    }
+    tree = treeHorizConcat(tree, childTrees[0], compaction);
+  }
+
+  function findDeepestAndSkinniest(childTrees) {
+    let curInd = 0;
+    for (let i = 1; i < childTrees.length; i++) {
+      if (compare(childTrees[i], childTrees[curInd])) curInd = i;
+    }
+    return curInd;
+  }
+
+  function compare(left, right) {
+    // returns left > right
+    return (left.height > right.height + 2) || ((left.height + 2 >= right.height) && (left.width < right.width)) || (left.height === right.height + 2 && left.width === right.width + 1);
+  }
+
+  return tree;
 }
