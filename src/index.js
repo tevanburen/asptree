@@ -677,3 +677,5 @@ function organizeTrees(childTrees, compaction) {
 
   return tree;
 }
+
+// testing
