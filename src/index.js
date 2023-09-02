@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import { pairsString } from './txt.js';
 import { Greek } from './greek.js';
+import gradcap from './gradcap.png';
+gradcap = {img: gradcap, width: .3, ratio: 6785 / 6321};
 
 class Brother {
   static width = 1;
@@ -122,10 +124,12 @@ class Brother {
     const margin = Background.toPxWidth(0, Background.pxHeight / 2);
     const pcColor = getPCColor(this.pc);
     if (!this.renderSpecial) {
-      if (this.pc !== null) return <div style={{width: Background.toPxWidth(Brother.width, -4-Background.pxHeight), marginLeft: margin, marginRight: margin, height: Background.toPxHeight(Brother.height, -4), backgroundColor: pcColor.backgroundColor, display: "flex", justifyContent: "center", alignItems: "center", border: "2px solid " + pcColor.borderColor, whiteSpace: "pre-wrap", textAlign: "center"}}>
-          {/* {this.graduated ? this.name : <b>{this.name}</b>} */}
-          {this.name}
-        </div>
+      if (this.pc !== null) return <ul><li style={{display: "inline-block"}}><div style={{width: Background.toPxWidth(Brother.width, -4-Background.pxHeight), marginLeft: margin, marginRight: margin, height: Background.toPxHeight(Brother.height, -4), backgroundColor: pcColor.backgroundColor, display: "flex", justifyContent: "center", alignItems: "center", border: "2px solid " + pcColor.borderColor, whiteSpace: "pre-wrap", textAlign: "center"}}>
+              {this.name}
+            </div>
+          </li>
+          {this.graduated ? <li style={{width: 0, height: 0, display: "inline-block", position: "relative", right: Background.toPxWidth(gradcap.width * .59, Background.pxHeight / 2), bottom: Background.toPxWidth(gradcap.width / gradcap.ratio * .41)}}><img src={gradcap.img} alt="gradcap" width={Background.toPxWidth(gradcap.width)} height={Background.toPxWidth(gradcap.width / gradcap.ratio)} /></li> : ""}
+        </ul>
       const pad = <div style={{display: "inline-block", width: Background.toPxWidth(Brother.width / 2, -1), height: Background.toPxHeight(Brother.height)}}></div>;
       return <ul>
         {pad}
@@ -148,6 +152,7 @@ class Brother {
           {this.name}
         </div>
       </li>
+      {this.graduated ? <li style={{width: 0, height: 0, display: "inline-block", position: "relative", right: Background.toPxWidth(gradcap.width * .59), bottom: Background.toPxWidth(gradcap.width / gradcap.ratio * .41)}}><img src={gradcap.img} alt="gradcap" width={Background.toPxWidth(gradcap.width)} height={Background.toPxWidth(gradcap.width / gradcap.ratio)} /></li> : ""}
     </ul>;
   }
 }
@@ -276,7 +281,7 @@ class Background extends React.Component {
     }
 
     this.pcList = new Array(this.maxPC);
-    this.pcList[0] = new Brother(Greek.getText(0, true), null, null, true, 0, false);
+    this.pcList[0] = new Brother(Greek.getText(0, true), null, null, null, 0, false);
     for (let i = 1; i <= this.maxPC; i++) {
       this.pcList[i] = new Brother(Greek.getText(i, true), this.pcList[i - 1], null, grads[i], i, false);
       this.pcList[i - 1].addLittle(this.pcList[i]);
@@ -286,8 +291,8 @@ class Background extends React.Component {
     Brother.extention = new Tree([[new Brother(null, null, null, null, null)], [new Branch([0])]]);
     Brother.extentionFlip = new Tree([[new Branch([0])], [new Brother(null, null, null, null, null)]]);
 
-    this.trim = 0;
-    this.compaction = 1;
+    this.trim = 1;
+    this.compaction = 2;
     this.byPC = false;
 
     for (let bro of this.curBrothers) {
@@ -405,7 +410,7 @@ function getBrothers() {
   const gcas = [];
   let i = 1;
   for (; !arr[i].includes("Founding Class"); i++) {
-    gcas.push(new Brother(arr[i].substring(1), null, -i, true, 0, true));
+    gcas.push(new Brother(arr[i].substring(1), null, -i, null, 0, true));
   }
   var roster = 0;
   var pc = 0;
