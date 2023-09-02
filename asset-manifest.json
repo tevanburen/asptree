@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/testing826/static/css/main.a471ddc1.css",
-    "main.js": "/testing826/static/js/main.7b9cb7a0.js",
-    "static/media/gradcap.png": "/testing826/static/media/gradcap.81b8801d4b3687adbd47.png",
-    "index.html": "/testing826/index.html",
-    "main.a471ddc1.css.map": "/testing826/static/css/main.a471ddc1.css.map",
-    "main.7b9cb7a0.js.map": "/testing826/static/js/main.7b9cb7a0.js.map"
+    "main.css": "/ZetaEta/static/css/main.a471ddc1.css",
+    "main.js": "/ZetaEta/static/js/main.3b137de1.js",
+    "static/media/gradcap.png": "/ZetaEta/static/media/gradcap.81b8801d4b3687adbd47.png",
+    "index.html": "/ZetaEta/index.html",
+    "main.a471ddc1.css.map": "/ZetaEta/static/css/main.a471ddc1.css.map",
+    "main.3b137de1.js.map": "/ZetaEta/static/js/main.3b137de1.js.map"
   },
   "entrypoints": [
     "static/css/main.a471ddc1.css",
-    "static/js/main.7b9cb7a0.js"
+    "static/js/main.3b137de1.js"
   ]
 }
