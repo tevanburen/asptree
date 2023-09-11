@@ -4,7 +4,11 @@ import './index.css';
 import { pairsString } from './txt.js';
 import { Greek } from './greek.js';
 import gradcap from './gradcap.png';
+import menu from './menu.png';
 gradcap = {img: gradcap, width: .3, ratio: 6785 / 6321};
+menu = {img: menu, width: .3};
+const stone = "rgb(173,165,135)";
+const cardinal = "rgb(196,30,58)";
 
 class Brother {
   static width = 1;
@@ -291,9 +295,10 @@ class Background extends React.Component {
     Brother.extention = new Tree([[new Brother(null, null, null, null, null)], [new Branch([0])]]);
     Brother.extentionFlip = new Tree([[new Branch([0])], [new Brother(null, null, null, null, null)]]);
 
-    this.trim = 1;
+    this.trim = 2;
     this.compaction = 2;
-    this.byPC = false;
+    this.byPC = true;
+    this.menuState = false;
 
     for (let bro of this.curBrothers) {
       bro.generateTree(this.trim, this.compaction, this.byPC);
@@ -326,44 +331,16 @@ class Background extends React.Component {
     return (num * Background.pxHeight + ((delta === undefined) ? 0 : delta)).toString() + "px";
   }
 
-  render0() {
-    var trees = this.curBrothers.map(brother => {return brother.stepladder(this.trim);});
-
-    if (this.trim > 0) {
-      for (let i = trees.length - 1; i >= 0; i--) {
-       if (this.curBrothers[i].graduated && this.curBrothers[i].numLivingDecs === 0) {
-          trees = trees.slice(0, i).concat(trees.slice(i + 1));
-        }
-      }
-    }
-    const widths = trees.map(li => {return li.width});
-    trees = trees.map(li => {return li.stepladder});
-
-    const gcas = [<li style={{display: "inline-block", verticalAlign: "top"}}> <div style={{border: "2px solid rgb(196,30,58)", width: "170px", height: "16px", textAlign: "center", verticalAlign: "middle", backgroundColor: "rgb(173,165,135)", whiteSpace: "pre-wrap", color: "rgb(196,30,58)", display: "inline-block"}}>{this.gcas[0].name}</div></li>];
-    for (let i = 1; i < this.gcas.length; i++) {
-      gcas.push(<li style={{display: "inline-block", verticalAlign: "top"}}> <div style={{width: "30px", height: "16px", textAlign: "center", verticalAlign: "middle", display: "inline-block"}}>{"→"}</div>
-      <div style={{border: "2px solid rgb(196,30,58)", width: "170px", height: "16px", textAlign: "center", verticalAlign: "middle", backgroundColor: "rgb(173,165,135)", whiteSpace: "pre-wrap", color: "rgb(196,30,58)", display: "inline-block"}}>{this.gcas[i].name}</div></li>);
-    }
-    
-
-    return (
-      <div className="background">
-        <ul>
+  menuBar() {
+    let wh = Background.toPxHeight(Brother.height, -4);
+    return <ul style={{position: "fixed", right: 20, top: 20, zIndex: 1}}>
         <li style={{display: "inline-block"}}>
-          <ul >
-          <div style={{border: "2px solid rgb(196,30,58)", width: "170px", height: "16px", textAlign: "center", verticalAlign: "middle", backgroundColor: "rgb(173,165,135)", whiteSpace: "pre-wrap", color: "rgb(196,30,58)", display: "inline-block"}}>{"GCAs"}</div>
-            {drawSpouts2([1])}
-            {this.pcList[1].stepladder().stepladder}
-          </ul>
-        </li >
-        <ul style={{display: "inline-block"}}>
-          <ul style={{listStyle: "none"}}>{gcas}</ul>
-          <div>{drawSpouts2(widths)}</div>
-          <ul style={{listStyle: "none"}}>{trees}</ul>
-        </ul>
-        </ul>
-      </div>
-    );
+            <div onClick={() => {this.menuState = !this.menuState; this.forceUpdate()}} style={{width: (this.menuState ? Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight) : wh), height: (this.menuState ? Background.toPxHeight(2 * Brother.height + 1, -4) : wh), backgroundColor: stone, display: "flex", justifyContent: "center", alignItems: "center", border: "2px solid " + cardinal, whiteSpace: "pre-wrap", textAlign: "center"}}></div>
+        </li>
+        <li style={{width: 0, height: 0, display: "inline-block", position: "relative", right: "43px", top: "5px", pointerEvents: "none"}}>
+          <img src={menu.img} alt="{menu icon}" width={Background.toPxWidth(menu.width)} height={Background.toPxWidth(menu.width)} />
+        </li>
+    </ul>;
   }
 
   render() {
@@ -396,7 +373,10 @@ class Background extends React.Component {
       tree = treeVertConcat(tree, new Tree([this.pcList]));
     }
 
-    return <div>{tree.render()}</div>;
+    return <ul style={{}}>
+      <li>{this.menuBar()}</li>
+      <li style={{display: "inline-block"}}>{tree.render()}</li>
+      </ul>;
   }
 }
 
@@ -458,8 +438,8 @@ function getPCColor(pc) {
     backgroundColor = "gold";
     borderColor = "black";
   } else if (pc === 0) {
-    backgroundColor = "rgb(173,165,135)";
-    borderColor = "rgb(196,30,58)";
+    backgroundColor = stone;
+    borderColor = cardinal;
   } else {
     let arr = [
       "255,192,210", // red
@@ -677,5 +657,3 @@ function organizeTrees(childTrees, compaction) {
 
   return tree;
 }
-
-// testing
