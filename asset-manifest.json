@@ -1,14 +1,15 @@
 {
   "files": {
-    "main.css": "/ZetaEta/static/css/main.a471ddc1.css",
-    "main.js": "/ZetaEta/static/js/main.d5db5121.js",
+    "main.css": "/ZetaEta/static/css/main.03414dd5.css",
+    "main.js": "/ZetaEta/static/js/main.8cce1f1b.js",
     "static/media/gradcap.png": "/ZetaEta/static/media/gradcap.81b8801d4b3687adbd47.png",
+    "static/media/logo512.png": "/ZetaEta/static/media/logo512.92ed990d79c093353ff7.png",
     "index.html": "/ZetaEta/index.html",
-    "main.a471ddc1.css.map": "/ZetaEta/static/css/main.a471ddc1.css.map",
-    "main.d5db5121.js.map": "/ZetaEta/static/js/main.d5db5121.js.map"
+    "main.03414dd5.css.map": "/ZetaEta/static/css/main.03414dd5.css.map",
+    "main.8cce1f1b.js.map": "/ZetaEta/static/js/main.8cce1f1b.js.map"
   },
   "entrypoints": [
-    "static/css/main.a471ddc1.css",
-    "static/js/main.d5db5121.js"
+    "static/css/main.03414dd5.css",
+    "static/js/main.8cce1f1b.js"
   ]
 }
