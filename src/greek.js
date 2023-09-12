@@ -45,7 +45,7 @@ export class Greek {
         if (pc === 0) {
             return "GCAs";
         } else if (pc === 1) {
-            return "Founding Class";
+            return english ? "Founding Class" : "Founders";
         } else {
             var str = "";
             pc -= 2;

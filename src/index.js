@@ -56,20 +56,19 @@ class Brother {
   static extention;
   static extentionFlip;
 
-  generateTree(trim, compaction, byPC) {
+  generateTree(trim, compaction, byPC, bottomPC) {
     var childTrees = [];
     var minChildPC = Infinity;
     if (byPC) {
       for (let bro of this.littles) {
-        if (trim < 2 || !bro.graduated || bro.numLivingDecs > 0) {
+        if ((trim < 2 || !bro.graduated || bro.numLivingDecs > 0) && bro.pc <= bottomPC) {
           minChildPC = Math.min(minChildPC, bro.pc);
         }
       }
     }
-
     for (let bro of this.littles) {
-      if (trim < 2 || !bro.graduated || bro.numLivingDecs > 0) {
-        let child = bro.generateTree(trim, compaction, byPC);
+      if ((trim < 2 || !bro.graduated || bro.numLivingDecs > 0) && bro.pc <= bottomPC) {
+        let child = bro.generateTree(trim, compaction, byPC, bottomPC);
         if (byPC) {
           for (let i = 0; i < bro.pc - minChildPC; i++) {
             child = treeVertConcat(Brother.extention, child);
@@ -245,15 +244,10 @@ class Background extends React.Component {
     this.allBrothers = this.allBrothers.rest;
     this.curBrothers = [];
     this.maxPC = 0;
-    for (const brother of this.allBrothers) {
-      if (brother.big === null) {
-        this.curBrothers.push(brother);
-      }
-      this.maxPC = Math.max(this.maxPC, brother.pc);
-    }
     let grads = new Array(this.maxPC).fill(true);
     for (let brother of this.allBrothers) {
       grads[brother.pc] &= brother.graduated;
+      this.maxPC = Math.max(this.maxPC, brother.pc);
     }
 
     this.pcList = new Array(this.maxPC);
@@ -262,7 +256,6 @@ class Background extends React.Component {
       this.pcList[i] = new Brother(Greek.getText(i, true), this.pcList[i - 1], null, grads[i], i, false);
       this.pcList[i - 1].addLittle(this.pcList[i]);
     }
-    this.pcList[0].generateTree(0, 0, true);
 
     Brother.extention = new Tree([[new Brother(null, null, null, null, null)], [new Branch([0])]]);
     Brother.extentionFlip = new Tree([[new Branch([0])], [new Brother(null, null, null, null, null)]]);
@@ -271,6 +264,8 @@ class Background extends React.Component {
     this.compaction = 1;
     this.byPC = true;
     this.menuState = false;
+    this.bottomPC = this.maxPC;
+    this.topPC = 1;
   }
   static pxWidth = 128;
   static pxHeight = 16;
@@ -303,6 +298,15 @@ class Background extends React.Component {
         <li style={{display: "inline-block", height: height, width: w6}}></li>
       </ul>;
     }
+    function getDropdown(listener, back, curPC) {
+      const height = Background.toPxHeight(Brother.height / 2);
+      const handle = (e) => {listener(back, parseInt(e.target.value));};
+      return <div style={{width: Background.toPxWidth(Brother.width, -2 - Background.pxHeight), height: height, display: "flex", justifyContent: "center"}}>
+        <select onChange={handle} value={curPC} style={{width: Background.toPxHeight(Brother.height * 2), height: height, display: "flex", justifyContent: "left", alignItems: "center", whiteSpace: "nowrap", textAlign: "center", border: "2px solid " + cardinal, background: stone, font: "12px"}}>
+          {back.pcList.slice(1).map((pc) => {return <option value={pc.pc}>{Greek.getText(pc.pc, false)}</option>})}
+        </select>
+      </div>;
+    }
     function byPCHandler(back, info) {
       if (back.byPC !== info) {
         back.byPC = info;
@@ -324,11 +328,35 @@ class Background extends React.Component {
         back.forceUpdate();
       }
     }
+    function topPCHandler(back, info) {
+      if (back.topPC !== info) {
+        back.topPC = info;
+        window.scrollTo(0, 0);
+        back.forceUpdate();
+      }
+    }
+    function bottomPCHandler(back, info) {
+      if (back.bottomPC !== info) {
+        back.bottomPC = info;
+        back.forceUpdate();
+      }
+    }
+
+    const spacing = <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height / 5)}}></li>
 
     return <ul style={{position: "fixed", right: 20, top: 20, zIndex: 1}}>
         {this.menuState ? <li style={{display: "inline-block", position: "relative", left: Background.toPxHeight(Brother.height)}}>
-            <ul style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight((6 * (Brother.height + 1)) - 1, -4), backgroundColor: stone, border: "2px solid " + cardinal}}>
-              <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height * 2 + 1, -2), fontSize: "18px"}}></li>
+            <ul style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight((7 * (Brother.height + 1)) - 1, -4), backgroundColor: stone, border: "2px solid " + cardinal}}>
+              <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height * 2 + 1, -2)}}></li>
+              <li style={{display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "normal", width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(1)}}>Pledge classes shown:</li>
+              <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height / 2)}}>
+                <ul>
+                  <li style={{display: "inline-block"}}>{getDropdown(topPCHandler, this, this.topPC)}</li>
+                  <li style={{display: "inline-block"}}><div style={{height: Background.toPxHeight(Brother.height / 2), display: "flex", alignItems: "center", justifyContent: "center"}}>to</div></li>
+                  <li style={{display: "inline-block"}}>{getDropdown(bottomPCHandler, this, this.bottomPC)}</li>
+                </ul>
+              </li>
+              {spacing}
               <li style={{display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "normal", width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(1)}}>Row display options:</li>
               <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height / 2)}}>
                 <ul>
@@ -336,7 +364,7 @@ class Background extends React.Component {
                   <li style={{display: "inline-block"}}>{getButton(!this.byPC, byPCHandler, "By generation", this, false)}</li>
                 </ul>
               </li>
-              <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height / 8)}}></li>
+              {spacing}
               <li style={{display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "normal", width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(1)}}>Tree display options:</li>
               <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height * 1.5)}}>
                 <ul>
@@ -345,7 +373,7 @@ class Background extends React.Component {
                   <li>{getButton(this.trim === 2, trimHandler, "Show only active branches", this, 2)}</li>
                 </ul>
               </li>
-              <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height / 8)}}></li>
+              {spacing}
               <li style={{display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "normal", width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(1)}}>Other display options:</li>
               <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height * 1.5)}}>
                 <ul>
@@ -354,7 +382,9 @@ class Background extends React.Component {
                   <li>{getButton(this.compaction === 2, compactionHandler, "Optimize space (no roster order)", this, 2)}</li>
                 </ul>
               </li>
-              <li style={{display: "flex", alignItems: "center", justifyContent: "right", whiteSpace: "pre", width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(1 + Brother.height / 4, -2), textAlign: "right", fontSize: "8px"}}><p>Created by TVB in 2023 <br></br>Email <a style={{color: cardinal, display: "inline-block"}} href = "mailto: tevanburen@gmail.com">tevanburen@gmail.com</a> if you find a mistake </p></li>
+              {spacing}
+              <li style={{display: "flex", alignItems: "center", justifyContent: "right", whiteSpace: "pre", width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(1, -2), textAlign: "right", fontSize: "8px"}}><p>Created by TVB in 2023 <br></br>Email <a style={{color: cardinal, display: "inline-block"}} href = "mailto: tevanburen@gmail.com?subject = ASP ZH Family Tree&body = wow thomas you did such a good job building this that's so cool i wish i could do something as impressive. anyway, ">tevanburen@gmail.com</a> if you find a mistake </p></li>
+              {spacing}
             </ul>
         </li> : ""}
         <li style={{display: "inline-block", position: "relative"}}>
@@ -370,13 +400,21 @@ class Background extends React.Component {
   }
 
   render() {
+    this.bottomPC = Math.max(this.topPC, this.bottomPC);
+
+    this.curBrothers.length = 0;
+    for (let brother of this.allBrothers) {
+      if (brother.pc === this.topPC || (brother.big === null && this.topPC === 1 && brother.pc <= this.bottomPC)) {
+        this.curBrothers.push(brother);
+      }
+    }
     var childTrees = [];
     
     for (let bro of this.curBrothers) {
       if (this.trim < 1 || !bro.graduated || bro.numLivingDecs > 0) {
-        let child = bro.generateTree(this.trim, this.compaction, this.byPC);
+        let child = bro.generateTree(this.trim, this.compaction, this.byPC, this.bottomPC);
         if (this.byPC) {
-          for (let i = 1; i < bro.pc; i++) {
+          for (let i = this.topPC; i < bro.pc; i++) {
             child = treeVertConcat(Brother.extention, child);
           }
         }
@@ -384,7 +422,12 @@ class Background extends React.Component {
       }
     }
 
-    var tree = organizeTrees(childTrees, this.compaction)
+    var tree;
+    if (childTrees.length === 0) {
+      tree = new Tree([[new Brother("No brothers fit these filters", null, null, null, this.topPC, false)]]);
+    } else {
+      tree = organizeTrees(childTrees, this.compaction)
+    }
 
     tree = treeVertConcat(new Tree([[new Branch(tree.spouts)]]), tree);
     tree = treeVertConcat(new Tree([this.gcas]), tree);
@@ -393,15 +436,20 @@ class Background extends React.Component {
       pc.renderSpecial = !this.byPC;
     }
     if (this.byPC) {
-      tree = treeHorizConcat(this.pcList[0].tree, tree);
+      tree = treeHorizConcat(treeVertConcat(new Tree([[this.pcList[0]], [new Branch([0])]]), this.pcList[this.topPC].generateTree(0, 0, true, this.bottomPC)), tree);
     } else {
       tree = treeVertConcat(new Tree([[new Branch()]]), tree);
-      tree = treeVertConcat(new Tree([this.pcList]), tree);
+      tree = treeVertConcat(new Tree([this.pcList.slice(0, 1).concat(this.pcList.slice(this.topPC, this.bottomPC + 1))]), tree);
     }
 
     return <ul style={{}}>
       <li>{this.menuBar()}</li>
-      <li style={{display: "inline-block"}}>{tree.render()}</li>
+      <li style={{display: "inline-block"}} onMouseDown={() => {
+        if (this.menuState) {
+          this.menuState = false;
+          this.forceUpdate();
+        }
+      }}>{tree.render()}</li>
       </ul>;
   }
 }
