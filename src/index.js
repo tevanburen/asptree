@@ -5,8 +5,10 @@ import { pairsString } from './txt.js';
 import { Greek } from './greek.js';
 import gradcap from './gradcap.png';
 import menu from './menu.png';
+import crest from './logo512.png';
 gradcap = {img: gradcap, width: .3, ratio: 6785 / 6321};
 menu = {img: menu, width: .3};
+crest = {img: crest, width: .8};
 const stone = "rgb(173,165,135)";
 const cardinal = "rgb(196,30,58)";
 
@@ -45,36 +47,6 @@ class Brother {
       this.numLivingDecs += ((little.numLivingDecs === null) ? little.calculateLivingDecs() : little.numLivingDecs) + (little.graduated ? 0 : 1);
     }
     return this.numLivingDecs;
-  }
-
-  stepladder(trim) {
-    var littles = this.littles.map(brother => {return brother.stepladder(trim);});
-    if (trim === 2) {
-      for (let i = littles.length - 1; i >= 0; i--) {
-        if (this.littles[i].graduated && this.littles[i].numLivingDecs === 0) {
-          littles = littles.slice(0, i).concat(littles.slice(i + 1));
-        }
-      }
-    }
-    const anyLittles = littles !== undefined && littles.length !== 0;
-    const widths = littles.map(li => {return li.width});
-    littles = littles.map(li => {return li.stepladder});
-
-    var totalWidth = 0;
-    for (let i of widths) {
-      totalWidth += i;
-    }
-
-    return {
-      "stepladder": (
-      <li style={{display: "inline-block", verticalAlign: "top"}}>
-        {/* <div style={{marginRight: "30px", border: "2px solid " + (this.graduated ? "gold" : "black"), width: "200px", height: "50px", textAlign: "center", verticalAlign: "middle", backgroundColor: getPCColor(this.pc), whiteSpace: "pre-wrap", marginBottom: "10px"}}>{this.name + ", " + ((Number.isInteger(this.roster)) ? (Greek.getText(this.pc, false) + " #" + this.roster.toString()) : "Transfer Student") + "\n" + this.numLivingDecs.toString() + "/" + this.numDecs.toString() + " Descendants Active"}</div> */}
-        <div style={{marginRight: "30px", border: "2px solid " + ((this.pc % 2) === 1 ? "rgb(196,30,58)" : "rgb(173,165,135)"), width: "170px", height: "16px", textAlign: "center", verticalAlign: "middle", backgroundColor: getPCColor(this.pc), whiteSpace: "pre-wrap"}}>{this.name + (this.graduated ? " ★" : "")}</div>
-        {drawSpouts2(widths)}
-        {anyLittles ? <ul style={{listStyle: "none"}}>{littles}</ul> : ""}
-      </li>
-    ),
-    "width" : anyLittles ? totalWidth : 1};
   }
 
   getWidth() {
@@ -128,7 +100,7 @@ class Brother {
     const margin = Background.toPxWidth(0, Background.pxHeight / 2);
     const pcColor = getPCColor(this.pc);
     if (!this.renderSpecial) {
-      if (this.pc !== null) return <ul><li style={{display: "inline-block"}}><div style={{width: Background.toPxWidth(Brother.width, -4-Background.pxHeight), marginLeft: margin, marginRight: margin, height: Background.toPxHeight(Brother.height, -4), backgroundColor: pcColor.backgroundColor, display: "flex", justifyContent: "center", alignItems: "center", border: "2px solid " + pcColor.borderColor, whiteSpace: "pre-wrap", textAlign: "center"}}>
+      if (this.pc !== null) return <ul><li style={{display: "inline-block"}}><div style={{width: Background.toPxWidth(Brother.width, -4-Background.pxHeight), marginLeft: margin, marginRight: margin, height: Background.toPxHeight(Brother.height, -4), backgroundColor: pcColor.backgroundColor, display: "flex", justifyContent: "center", alignItems: "center", border: "2px solid " + pcColor.borderColor, whiteSpace: "normal", textAlign: "center"}}>
               {this.name}
             </div>
           </li>
@@ -152,7 +124,7 @@ class Brother {
         </ul>}
       </li>
       <li style={{display: "inline-block"}}>
-        <div style={{width: Background.toPxWidth(Brother.width, -4-Background.pxHeight), height: Background.toPxHeight(Brother.height, -4), backgroundColor: pcColor.backgroundColor, display: "flex", justifyContent: "center", alignItems: "center", border: "2px solid " + pcColor.borderColor, whiteSpace: "pre-wrap", textAlign: "center"}}>
+        <div style={{width: Background.toPxWidth(Brother.width, -4-Background.pxHeight), height: Background.toPxHeight(Brother.height, -4), backgroundColor: pcColor.backgroundColor, display: "flex", justifyContent: "center", alignItems: "center", border: "2px solid " + pcColor.borderColor, whiteSpace: "normal", textAlign: "center"}}>
           {this.name}
         </div>
       </li>
@@ -295,33 +267,13 @@ class Background extends React.Component {
     Brother.extention = new Tree([[new Brother(null, null, null, null, null)], [new Branch([0])]]);
     Brother.extentionFlip = new Tree([[new Branch([0])], [new Brother(null, null, null, null, null)]]);
 
-    this.trim = 2;
-    this.compaction = 2;
+    this.trim = 0;
+    this.compaction = 1;
     this.byPC = true;
     this.menuState = false;
-
-    for (let bro of this.curBrothers) {
-      bro.generateTree(this.trim, this.compaction, this.byPC);
-    }
   }
   static pxWidth = 128;
   static pxHeight = 16;
-
-  // handleClick(i) {
-  //   const history = this.state.history.slice(0, this.state.stepNumber + 1);
-  //   const current = history[history.length - 1];
-  //   const squares = current.squares.slice();
-  //   squares[i] = this.state.xIsNext ? "X" : this.props.oSymbol;
-  //   this.setState({
-  //     history: history.concat([
-  //       {
-  //         squares: squares
-  //       }
-  //     ]),
-  //     stepNumber: history.length,
-  //     xIsNext: !this.state.xIsNext
-  //   });
-  // }
 
   static toPxWidth(num, delta) {
     return (num * Background.pxWidth + ((delta === undefined) ? 0 : delta)).toString() + "px";
@@ -333,13 +285,87 @@ class Background extends React.Component {
 
   menuBar() {
     let wh = Background.toPxHeight(Brother.height, -4);
+
+    function getButton(isSelected, listener, text, back, info) {
+      const w6 = Background.toPxHeight(Brother.height / 6);
+      const w3ish = Background.toPxHeight(Brother.height / 3, -4);
+      const height = Background.toPxHeight(Brother.height / 2);
+      
+      return <ul onMouseDown={() => {listener(back, info)}} style={{width: Background.toPxWidth(Brother.width, -2 - Background.pxHeight / 2), height: height, display: "flex", justifyContent: "center"}}>
+        <li style={{display: "inline-block", height: height, width: w6}}></li>
+        <li style={{display: "inline-block", height: height, width: Background.toPxHeight(Brother.height / 3)}}>
+          <ul style={{display: "flex", height: height, width: Background.toPxHeight(Brother.height / 3), justifyContent: "center", alignItems: "center", whiteSpace: "normal"}}>
+            <div style={{height: w3ish, width: w3ish, border: "2px solid black", background: (isSelected ? cardinal : stone)}}></div>
+          </ul>
+        </li>
+        <li style={{display: "inline-block", height: height, width: w6}}></li>
+        <li style={{display: "inline-block", height: height, width: Background.toPxHeight(Brother.height * 1.5)}}><div style={{width: Background.toPxHeight(Brother.height * 1.5), height: height, display: "flex", justifyContent: "left", alignItems: "center", whiteSpace: "nowrap", textAlign: "center"}}>{text}</div></li>
+        <li style={{display: "inline-block", height: height, width: w6}}></li>
+      </ul>;
+    }
+    function byPCHandler(back, info) {
+      if (back.byPC !== info) {
+        back.byPC = info;
+        window.scrollTo(0, 0);
+        back.forceUpdate();
+      }
+    }
+    function trimHandler(back, info) {
+      if (back.trim !== info) {
+        back.trim = info;
+        window.scrollTo(0, 0);
+        back.forceUpdate();
+      }
+    }
+    function compactionHandler(back, info) {
+      if (back.compaction !== info) {
+        back.compaction = info;
+        window.scrollTo(0, 0);
+        back.forceUpdate();
+      }
+    }
+
     return <ul style={{position: "fixed", right: 20, top: 20, zIndex: 1}}>
-        <li style={{display: "inline-block"}}>
-            <div onClick={() => {this.menuState = !this.menuState; this.forceUpdate()}} style={{width: (this.menuState ? Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight) : wh), height: (this.menuState ? Background.toPxHeight(2 * Brother.height + 1, -4) : wh), backgroundColor: stone, display: "flex", justifyContent: "center", alignItems: "center", border: "2px solid " + cardinal, whiteSpace: "pre-wrap", textAlign: "center"}}></div>
+        {this.menuState ? <li style={{display: "inline-block", position: "relative", left: Background.toPxHeight(Brother.height)}}>
+            <ul style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight((6 * (Brother.height + 1)) - 1, -4), backgroundColor: stone, border: "2px solid " + cardinal}}>
+              <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height * 2 + 1, -2), fontSize: "18px"}}></li>
+              <li style={{display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "normal", width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(1)}}>Row display options:</li>
+              <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height / 2)}}>
+                <ul>
+                  <li style={{display: "inline-block"}}>{getButton(this.byPC, byPCHandler, "By pledge class", this, true)}</li>
+                  <li style={{display: "inline-block"}}>{getButton(!this.byPC, byPCHandler, "By generation", this, false)}</li>
+                </ul>
+              </li>
+              <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height / 8)}}></li>
+              <li style={{display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "normal", width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(1)}}>Tree display options:</li>
+              <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height * 1.5)}}>
+                <ul>
+                  <li>{getButton(this.trim === 0, trimHandler, "Show all brothers", this, 0)}</li>
+                  <li>{getButton(this.trim === 1, trimHandler, "Show only active trees", this, 1)}</li>
+                  <li>{getButton(this.trim === 2, trimHandler, "Show only active branches", this, 2)}</li>
+                </ul>
+              </li>
+              <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height / 8)}}></li>
+              <li style={{display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "normal", width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(1)}}>Other display options:</li>
+              <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height * 1.5)}}>
+                <ul>
+                  <li>{getButton(this.compaction === 0, compactionHandler, "Keep trees separated", this, 0)}</li>
+                  <li>{getButton(this.compaction === 1, compactionHandler, "Trim empty space", this, 1)}</li>
+                  <li>{getButton(this.compaction === 2, compactionHandler, "Optimize space (no roster order)", this, 2)}</li>
+                </ul>
+              </li>
+              <li style={{display: "flex", alignItems: "center", justifyContent: "right", whiteSpace: "pre", width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(1 + Brother.height / 4, -2), textAlign: "right", fontSize: "8px"}}><p>Created by TVB in 2023 <br></br>Email <a style={{color: cardinal, display: "inline-block"}} href = "mailto: tevanburen@gmail.com">tevanburen@gmail.com</a> if you find a mistake </p></li>
+            </ul>
+        </li> : ""}
+        <li style={{display: "inline-block", position: "relative"}}>
+            <div onClick={() => {this.menuState = !this.menuState; this.forceUpdate()}} style={{width: wh, height: wh, backgroundColor: stone, border: "2px solid " + cardinal, whiteSpace: "normal", textAlign: "center"}}></div>
         </li>
         <li style={{width: 0, height: 0, display: "inline-block", position: "relative", right: "43px", top: "5px", pointerEvents: "none"}}>
           <img src={menu.img} alt="{menu icon}" width={Background.toPxWidth(menu.width)} height={Background.toPxWidth(menu.width)} />
         </li>
+        {this.menuState ? <li style={{width: 0, height: 0, display: "inline-block", position: "relative", right: "171px", top: "8px"}}>
+                <img src={crest.img} alt="{crest}" width={Background.toPxWidth(crest.width)} height={Background.toPxWidth(crest.width)} />
+        </li> : ""}
     </ul>;
   }
 
@@ -348,7 +374,7 @@ class Background extends React.Component {
     
     for (let bro of this.curBrothers) {
       if (this.trim < 1 || !bro.graduated || bro.numLivingDecs > 0) {
-        let child = bro.tree;
+        let child = bro.generateTree(this.trim, this.compaction, this.byPC);
         if (this.byPC) {
           for (let i = 1; i < bro.pc; i++) {
             child = treeVertConcat(Brother.extention, child);
@@ -362,7 +388,6 @@ class Background extends React.Component {
 
     tree = treeVertConcat(new Tree([[new Branch(tree.spouts)]]), tree);
     tree = treeVertConcat(new Tree([this.gcas]), tree);
-    tree = treeVertConcat(tree, new Tree([[new Branch()]]));
 
     for (let pc of this.pcList) {
       pc.renderSpecial = !this.byPC;
@@ -370,7 +395,8 @@ class Background extends React.Component {
     if (this.byPC) {
       tree = treeHorizConcat(this.pcList[0].tree, tree);
     } else {
-      tree = treeVertConcat(tree, new Tree([this.pcList]));
+      tree = treeVertConcat(new Tree([[new Branch()]]), tree);
+      tree = treeVertConcat(new Tree([this.pcList]), tree);
     }
 
     return <ul style={{}}>
@@ -461,44 +487,6 @@ function getPCColor(pc) {
     borderColor = "rgb(" + arr2[Math.floor((tmp % 8) / 2)] + ")";
   }
   return {backgroundColor, borderColor};
-}
-
-function drawSpouts2(widths) {
-  var els = [<li style={{display: "inline-block", verticalAlign: "top", height: "20px", width: "86px", backgroundColor: "white"}}></li>];
-  if (widths.length > 0) {
-    els.push(<li style={{display: "inline-block", verticalAlign: "top", height: "20px", width: "2px", backgroundColor: "black"}}></li>);
-    if (widths.length > 1) {
-      els.push(<li style={{display: "inline-block", verticalAlign: "top", height: "20px"}}>{
-        <ul style={{listStyle: "none"}}>
-          <li style={{verticalAlign: "top", height: "9px", width: ((116 + (widths[0] - 1) * 204).toString() + "px"), backgroundColor: "white"}}>{""}</li>
-          <li style={{verticalAlign: "top", height: "2px", width: ((116 + (widths[0] - 1) * 204).toString() + "px"), backgroundColor: "black"}}>{""}</li>
-        </ul>
-      }</li>);
-      for (let i = 1; i < widths.length - 1; i++) {
-        els.push(<li style={{display: "inline-block", verticalAlign: "top", height: "20px"}}>{
-          <ul style={{listStyle: "none"}}>
-            <li style={{verticalAlign: "top", height: "9px", width: ((204 * widths[i]).toString() + "px"), backgroundColor: "white"}}>{""}</li>
-            <li style={{verticalAlign: "top", height: "2px", width: ((204 * widths[i]).toString() + "px"), backgroundColor: "black"}}>{""}</li>
-            <ul style={{listStyle: "none"}}>
-              <li style={{display: "inline-block", verticalAlign: "top", height: "9px", width: "86px", backgroundColor: "white"}}>{""}</li>
-              <li style={{display: "inline-block", verticalAlign: "top", height: "9px", width: "2px", backgroundColor: "black"}}>{""}</li>
-            </ul>
-          </ul>
-        }</li>);
-      }
-      els.push(<li style={{display: "inline-block", verticalAlign: "top", height: "20px"}}>{
-        <ul style={{listStyle: "none"}}>
-          <li style={{verticalAlign: "top", height: "9px", width: "88px", backgroundColor: "white"}}>{""}</li>
-          <li style={{verticalAlign: "top", height: "2px", width: "88px", backgroundColor: "black"}}>{""}</li>
-          <ul style={{listStyle: "none"}}>
-            <li style={{display: "inline-block", verticalAlign: "top", height: "9px", width: "86px", backgroundColor: "white"}}>{""}</li>
-            <li style={{display: "inline-block", verticalAlign: "top", height: "9px", width: "2px", backgroundColor: "black"}}>{""}</li>
-          </ul>
-        </ul>
-      }</li>);
-    }
-  }
-  return <ul style={{listStyle: "none"}}>{els}</ul>;
 }
 
 function treeHorizConcat(left, right, compaction) {
