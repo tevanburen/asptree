@@ -331,6 +331,7 @@ class Background extends React.Component {
     function topPCHandler(back, info) {
       if (back.topPC !== info) {
         back.topPC = info;
+        back.bottomPC = Math.max(back.topPC, back.bottomPC);
         window.scrollTo(0, 0);
         back.forceUpdate();
       }
@@ -338,6 +339,7 @@ class Background extends React.Component {
     function bottomPCHandler(back, info) {
       if (back.bottomPC !== info) {
         back.bottomPC = info;
+        back.topPC = Math.min(back.topPC, back.bottomPC);
         back.forceUpdate();
       }
     }
@@ -400,8 +402,6 @@ class Background extends React.Component {
   }
 
   render() {
-    this.bottomPC = Math.max(this.topPC, this.bottomPC);
-
     this.curBrothers.length = 0;
     for (let brother of this.allBrothers) {
       if (brother.pc === this.topPC || (brother.big === null && this.topPC === 1 && brother.pc <= this.bottomPC)) {

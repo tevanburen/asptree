@@ -239,7 +239,7 @@ Riley Greene,Chase Fletcher,,
 
 Tau Class,
 Harshan Chenna,Cooper Billsborough,,
-Suraj Karthic,Landon Menuey,,
+Suraj Karthic,Landon Menuey,graduated,
 Aayush Patel,George Pearson,,
 Giovanni Hsu,Nathan Adair,,
 Sivasai Manyapu,Harrison Euton,,
