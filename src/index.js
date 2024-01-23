@@ -257,6 +257,8 @@ class Background extends React.Component {
       this.pcList[i - 1].addLittle(this.pcList[i]);
     }
 
+    printCSV(this.allBrothers);
+
     Brother.extention = new Tree([[new Brother(null, null, null, null, null)], [new Branch([0])]]);
     Brother.extentionFlip = new Tree([[new Branch([0])], [new Brother(null, null, null, null, null)]]);
 
@@ -345,6 +347,8 @@ class Background extends React.Component {
     }
 
     const spacing = <li style={{width: Background.toPxWidth(Brother.width * 2, -4 - Background.pxHeight), height: Background.toPxHeight(Brother.height / 5)}}></li>
+
+
 
     return <ul style={{position: "fixed", right: 20, top: 20, zIndex: 1}}>
         {this.menuState ? <li style={{display: "inline-block", position: "relative", left: Background.toPxHeight(Brother.height)}}>
@@ -469,14 +473,20 @@ function getBrothers() {
   var roster = 0;
   var pc = 0;
   var out = [];
+  var transCount = 0;
   for (; i < arr.length; i++) {
     let str = arr[i].substring(1);
     if (str.includes(" Class")) {
+      transCount = 0;
       pc++;
+    } else if (str.includes("Transfers")) {
+      transCount = 1;
     } else if (str !== "") {
       let big = null;
-      let transfer = arr[i + 1].localeCompare("transfer") === 0;
-      if ((!transfer) && arr[i + 1].length !== 0) {
+
+      let tmp = (transCount > 0) ? roster + (5 * (1 - (10 ** -(transCount++))) / 9) : ++roster;
+
+      if (arr[i + 1].length !== 0) {
         for (let j = out.length - 1; j >= 0; j--) {
           if (arr[i + 1].localeCompare(out[j].name) === 0) {
             big = out[j];
@@ -484,10 +494,8 @@ function getBrothers() {
           }
         }
       }
-
-      let tmp = (transfer) ? roster + .5 : ++roster;
       
-      let newBro = new Brother(str, big, tmp, arr[i + 2] !== "", pc);
+      let newBro = new Brother(str, big, tmp, arr[i + 2] !== "", (transCount > 0) ? pc + 1 : pc);
       out.push(newBro);
       if (big !== null) {
         big.addLittle(newBro);
@@ -692,4 +700,13 @@ function organizeTrees(childTrees, compaction) {
   }
 
   return tree;
+}
+
+function printCSV(brothers) {
+  console.log("CSV:");
+  var str = "class,roster,name,graduated\n";
+  for (let brother of brothers) {
+    str += Greek.getText(brother.pc, true) + "," + brother.roster + "," + brother.name + "," + brother.graduated + "\n";
+  }
+  console.log(str);
 }
