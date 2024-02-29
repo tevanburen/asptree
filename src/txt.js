@@ -279,5 +279,9 @@ Dhanesh Amin,Henry Moore,,
 Ian Wong,Liam Dolphin,,
 Jasper Hsu,Shalva Begiashvili,,
 Aayush Kevadia,Nicholas Candello,,
+
+Psi Class,
+Jose Chavez,Ziyan Ishani,,
+Moksh Shah,Pulkit Iyer,,
 `;
 export { pairsString };
