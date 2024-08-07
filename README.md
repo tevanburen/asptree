@@ -1,3 +1,7 @@
+hey: to push changes to github pages, use "npm run deploy"
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
