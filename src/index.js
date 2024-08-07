@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import { pairsString } from './txt.js';
 import { Greek } from './greek.js';
-import gradcap from './gradcap.png';
-import menu from './menu.png';
-import crest from './logo512.png';
-gradcap = {img: gradcap, width: .3, ratio: 6785 / 6321};
-menu = {img: menu, width: .3};
-crest = {img: crest, width: .8};
+import gradcap_tmp from './gradcap.png';
+import menu_tmp from './menu.png';
+import crest_tmp from './logo512.png';
+const gradcap = {img: gradcap_tmp, width: .3, ratio: 6785 / 6321};
+const menu = {img: menu_tmp, width: .3};
+const crest = {img: crest_tmp, width: .8};
 const stone = "rgb(173,165,135)";
 const cardinal = "rgb(196,30,58)";
 
@@ -462,6 +462,7 @@ class Background extends React.Component {
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<Background />);
+// root.render(<div>Hello</div>);
 
 function getBrothers() {
   var arr = pairsString.split(",");
