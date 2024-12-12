@@ -263,7 +263,7 @@ class Background extends React.Component {
     Brother.extentionFlip = new Tree([[new Branch([0])], [new Brother(null, null, null, null, null)]]);
 
     this.trim = 0;
-    this.compaction = 1;
+    this.compaction = 2;
     this.byPC = true;
     this.menuState = false;
     this.bottomPC = this.maxPC;
