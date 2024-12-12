@@ -281,7 +281,15 @@ Jasper Hsu,Shalva Begiashvili,,
 Aayush Kevadia,Nicholas Candello,,
 
 Psi Class,
-Jose Chavez,Ziyan Ishani,,
 Moksh Shah,Pulkit Iyer,,
+Jose Chavez,Ziyan Ishani,,
+
+Alpha Alpha Class,
+Ross Kleiber,Aaditya Majumdar,,
+Parker Hess,Link Kell,,
+Mitch Miller,Adam Bakr,,
+Rory King,Jack Peta,,
+Fred Kane,Kieran Kelleher,,
+Tzak Lau,Liam Dolphin,,
 `;
 export { pairsString };
