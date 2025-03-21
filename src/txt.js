@@ -290,6 +290,11 @@ Parker Hess,Link Kell,,
 Mitch Miller,Adam Bakr,,
 Rory King,Jack Peta,,
 Fred Kane,Kieran Kelleher,,
-Tzak Lau,Liam Dolphin,,
+2zak Lau,Liam Dolphin,,
+
+Alpha Beta Class,
+Aayush Vaswani,2zak Lau,,
+Deven Nahata,Henry Moore,,
+Arav Arora,Moksh Shah,,
 `;
 export { pairsString };
