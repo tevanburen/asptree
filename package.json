@@ -14,6 +14,7 @@
   },
   "scripts": {
     "predeploy": "npm run build",
+    "postbuild": "cp redirect.html build/index.html",
     "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",

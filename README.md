@@ -1,5 +1,14 @@
 hey: to push changes to github pages, use "npm run deploy"
 
+## Redirect notice
+
+This app has been superseded. The deployed GitHub Pages site now redirects visitors to https://tevanburen.com/asp-tree. The source code is preserved here for reference.
+
+**How the redirect works:**
+- `redirect.html` at the repo root is a plain HTML redirect page (no JS).
+- `npm run build` triggers a `postbuild` step that copies `redirect.html` over `build/index.html`, replacing the React-bundle-injected file with the pure redirect before deployment.
+- `public/index.html` is left untouched, so `npm start` still runs the original app locally.
+
 
 
 # Getting Started with Create React App
